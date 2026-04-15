@@ -82,4 +82,32 @@ fig.add_trace(go.Scatter(x=x, y=y_long, name="Long PnL",
                          line=dict(color="#00FFAA", width=3, dash="dash")))
 
 # Short PnL Line
-fig.add_trace(
+fig.add_trace(go.Scatter(x=x, y=y_short, name="Short PnL", 
+                         line=dict(color="#FF4444", width=3, dash="dash")))
+
+# Master Net Line (The Box)
+fig.add_trace(go.Scatter(x=x, y=y_net, name="Net Position (Locked)", 
+                         line=dict(color="#FFFFFF", width=5)))
+
+# Zero Line
+fig.add_hline(y=0, line_color="gray", line_width=1)
+
+# Markers for Breakevens
+fig.add_vline(x=long_entry, line_dash="dot", line_color="#00FFAA", 
+              annotation_text="Long Breakeven", annotation_position="bottom right")
+fig.add_vline(x=short_entry, line_dash="dot", line_color="#FF4444", 
+              annotation_text="Short Breakeven", annotation_position="top right")
+
+# Current Live Price Marker
+fig.add_vline(x=current_price, line_dash="solid", line_color="orange", 
+              annotation_text="Live Market", annotation_position="top left")
+
+fig.update_layout(
+    xaxis_title="Underlying Asset Price",
+    yaxis_title="Total Profit / Loss ($)",
+    template="plotly_dark",
+    height=600,
+    hovermode="x unified"
+)
+
+st.plotly_chart(fig, use_container_width=True)
