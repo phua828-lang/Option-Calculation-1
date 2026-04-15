@@ -60,4 +60,26 @@ m1.metric("Total Margin Locked (Both Legs)", f"${total_margin:,.2f}")
 if net_pnl >= 0:
     m2.metric("Net Locked Profit (Spread)", f"+${net_pnl:,.2f}", delta_color="normal")
 else:
-    m2.metric("Net Locked Loss (Spread)", f"-${abs(net_pnl):,.2f}", delta_color="
+    m2.metric("Net Locked Loss (Spread)", f"-${abs(net_pnl):,.2f}", delta_color="inverse")
+
+# --- VISUALIZATION ENGINE ---
+# Generate price array focusing broadly around the entry prices
+center_price = (long_entry + short_entry) / 2
+x_min = center_price * 0.7
+x_max = center_price * 1.3
+x = np.linspace(x_min, x_max, 300)
+
+# Calculate linear PnL arrays
+y_long = (x - long_entry) * qty * multiplier
+y_short = (short_entry - x) * qty * multiplier
+y_net = y_long + y_short
+
+# Plotly Chart
+fig = go.Figure()
+
+# Long PnL Line
+fig.add_trace(go.Scatter(x=x, y=y_long, name="Long PnL", 
+                         line=dict(color="#00FFAA", width=3, dash="dash")))
+
+# Short PnL Line
+fig.add_trace(
