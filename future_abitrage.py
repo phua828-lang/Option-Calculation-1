@@ -1,0 +1,63 @@
+import streamlit as st
+import plotly.graph_objects as go
+import numpy as np
+
+st.set_page_config(page_title="Long/Short Futures Hedger", layout="wide")
+
+# --- COMMAND CENTER (SIDEBAR) ---
+st.sidebar.title("⚙️ Position Controls")
+
+st.sidebar.markdown("### Market Environment")
+current_price = st.sidebar.number_input("Live Market Price", value=3400.0)
+
+st.sidebar.markdown("### Position Sizing")
+qty = st.sidebar.number_input("Number of Contracts (Lots)", value=100, min_value=1)
+multiplier = st.sidebar.number_input("Contract Multiplier (e.g., 10 MT)", value=10, min_value=1)
+margin_per_lot = st.sidebar.number_input("Margin per Lot ($)", value=2500.0)
+
+st.sidebar.markdown("### Execution Prices")
+long_entry = st.sidebar.number_input("Long Entry Price (Buy)", value=3350.0)
+short_entry = st.sidebar.number_input("Short Entry Price (Sell)", value=3450.0)
+
+
+# --- CORE MATHEMATICS ---
+total_margin = (margin_per_lot * qty) * 2 # Margin required for holding both legs
+
+# Individual Leg Breakevens
+breakeven_long = long_entry
+breakeven_short = short_entry
+
+# Individual Leg PnL
+pnl_long = (current_price - long_entry) * qty * multiplier
+pnl_short = (short_entry - current_price) * qty * multiplier
+
+# Net Locked PnL (The Arbitrage / Spread value)
+net_pnl = pnl_long + pnl_short
+
+# --- MAIN DASHBOARD UI ---
+st.title("⚖️ Futures Spread & Hedge Dashboard")
+st.markdown("Compare Long and Short exposure simultaneously to visualize boxed positions.")
+
+# Top Metric Cards (Leg 1)
+st.markdown("### Long Position (Upside Exposure)")
+l1, l2, l3 = st.columns(3)
+l1.metric("Long Breakeven", f"{breakeven_long:,.2f}")
+l2.metric("Long Floating PnL", f"${pnl_long:,.2f}", delta_color="normal" if pnl_long >= 0 else "inverse")
+l3.metric("Long Margin", f"${margin_per_lot * qty:,.2f}")
+
+# Top Metric Cards (Leg 2)
+st.markdown("### Short Position (Downside Exposure)")
+s1, s2, s3 = st.columns(3)
+s1.metric("Short Breakeven", f"{breakeven_short:,.2f}")
+s2.metric("Short Floating PnL", f"${pnl_short:,.2f}", delta_color="normal" if pnl_short >= 0 else "inverse")
+s3.metric("Short Margin", f"${margin_per_lot * qty:,.2f}")
+
+st.markdown("---")
+
+# Master Net Metrics
+m1, m2 = st.columns(2)
+m1.metric("Total Margin Locked (Both Legs)", f"${total_margin:,.2f}")
+if net_pnl >= 0:
+    m2.metric("Net Locked Profit (Spread)", f"+${net_pnl:,.2f}", delta_color="normal")
+else:
+    m2.metric("Net Locked Loss (Spread)", f"-${abs(net_pnl):,.2f}", delta_color="
